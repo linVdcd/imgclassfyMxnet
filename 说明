@@ -1,0 +1,26 @@
+1、需要先用im2rec.py生成rec文件格式
+
+    数据组织如下：
+	假设数据有10个类，则需要将样本放在对应类别的文件夹下面。
+	例如，faceShape有10个种类，那么在faceShape下面应该有10个子文件夹。
+    那么生成数据的命令如下：
+	python path/to/mxnet/tools/im2rec.py --list 1 --recursice 1 --train-ratio 0.96  生成rec的名字(如，face) path/to/faceShape   生成.lst
+	python path/to/mxnet/tools/im2rec.py --resize 224(图片需要resize的大小) --num-thread 12 face path/to/faceShape 生成.rec
+2、运行train.py
+    需要更改rec的路径
+一些文件说明：
+    confuseMatrix.py:生成困惑矩阵，用来分析训练数据，以反馈数据标注组。
+    Pre.py:预测
+da目录是数据扩充生成的一些例子，调试用的
+数据在research@192.168.11.170的/home/research/data/linmingan/faceShape 里面，已经有生成好的.rec
+
+训练的一些建议：如果模型中有BN层的话，可以使用大的初始学习率（0.1 or 0.05）和大的batchsize（128,256），这样收敛会比较快。
+		    如果没有BN层，建议使用0.001的初始学习率。
+
+faceShape的超参数设置：训练数据集占总数据集的96%，模型irv2S。
+		学习率:0.05->0.01->0.001->0.0001，
+		第一次调整是在大概训练了200次后选择正确率最高的epoch开始训练，
+		其他的调整一般训练个30次就选择最高正确率的epoch开始训练。
+		数据扩充方式：mirror=1，h=s=l=100，rotate=60。
+		图片输入无归一化，裁剪出眼睛以下部分的人脸后，直接输入，大小224*224。
+		在face_merge数据上正确率87.5%，线上使用该模型。
